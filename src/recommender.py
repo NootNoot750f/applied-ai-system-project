@@ -47,12 +47,74 @@ class Recommender:
         self.songs = songs
 
     def recommend(self, user: UserProfile, k: int = 5) -> List[Song]:
-        # TODO: Implement recommendation logic
-        return self.songs[:k]
+        """
+        Recommends the top k songs for a user based on preference matching.
+
+        Args:
+            user: UserProfile object with user preferences
+            k: Number of top recommendations to return (default 5)
+
+        Returns:
+            List of top k Song objects sorted by score descending
+        """
+        # Convert UserProfile to dict format expected by score_song()
+        user_prefs = {
+            'mood': user.favorite_mood,
+            'genre': user.favorite_genre,
+            'energy': user.target_energy,
+            'tempo_bpm': user.target_tempo_bpm
+        }
+
+        # Score all songs and collect (song, score) pairs
+        scored_songs = []
+        for song in self.songs:
+            # Convert Song object to dict
+            song_dict = {
+                'mood': song.mood,
+                'genre': song.genre,
+                'energy': song.energy,
+                'tempo_bpm': song.tempo_bpm
+            }
+            score, _ = score_song(user_prefs, song_dict)
+            scored_songs.append((song, score))
+
+        # Sort by score (highest first) and return top k Song objects
+        sorted_songs = sorted(scored_songs, key=lambda x: x[1], reverse=True)
+        return [song for song, score in sorted_songs[:k]]
 
     def explain_recommendation(self, user: UserProfile, song: Song) -> str:
-        # TODO: Implement explanation logic
-        return "Explanation placeholder"
+        """
+        Explains why a particular song is recommended for a user.
+
+        Args:
+            user: UserProfile object with user preferences
+            song: Song object to explain
+
+        Returns:
+            Formatted explanation string with score and reasoning breakdown
+        """
+        # Convert UserProfile to dict format expected by score_song()
+        user_prefs = {
+            'mood': user.favorite_mood,
+            'genre': user.favorite_genre,
+            'energy': user.target_energy,
+            'tempo_bpm': user.target_tempo_bpm
+        }
+
+        # Convert Song object to dict
+        song_dict = {
+            'mood': song.mood,
+            'genre': song.genre,
+            'energy': song.energy,
+            'tempo_bpm': song.tempo_bpm
+        }
+
+        # Get score and reasons
+        score, reasons = score_song(user_prefs, song_dict)
+        explanation_str = ", ".join(reasons)
+
+        # Format and return explanation
+        return f"Score: {score}/10.0. Reasons: {explanation_str}"
 
 def load_songs(csv_path: str) -> List[Dict]:
     """Load songs from a CSV file and return a list of song dictionaries with numeric values converted."""
@@ -92,7 +154,7 @@ def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
         song: Dict with song attributes including 'mood', 'genre', 'energy', 'tempo_bpm'
 
     Returns:
-        Tuple of (score, reasons) where score is float (0-10) and reasons is list of explanation strings
+        Tuple of (score, reasons) where score is float (0-10.0) and reasons is list of explanation strings
     """
     score = 0.0
     reasons = []

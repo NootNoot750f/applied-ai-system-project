@@ -131,6 +131,7 @@ TOP 5 RECOMMENDATIONS:
 ```
 
 **What this shows:**
+
 - The top recommendation "Sunrise City" scores a perfect 10/10 because it matches all four features
 - Songs that match mood (happy) score higher even if genre or other features don't match
 - The scoring breakdown clearly explains why each song was ranked
@@ -365,7 +366,7 @@ Use this section to document the experiments you ran. For example:
 
 ---
 
-## Limitations and Risks
+## Limitations and Bias
 
 Summarize some limitations of your recommender.
 
@@ -376,6 +377,7 @@ Examples:
 - It might over favor one genre or mood
 
 You will go deeper on this in your model card.
+The system systematically disadvantages users with extreme energy preferences (0.0 or 1.0) because the ±0.15 tolerance band for perfect energy match is narrow relative to the actual distribution of songs in the dataset. Most songs in the 18-song catalog cluster between 0.35-0.95 energy, leaving users seeking minimal energy (nearly silent) or maximum energy (very loud) unable to find more than 1-2 songs that fit perfectly. While a user preferring mid-range energy (0.5) can find 10+ songs with perfect energy matches and consistently score high, an extreme user loses 1-2 points on nearly every recommendation, effectively creating a filter bubble that excludes outlier preferences from top-ranked results. This reveals a fairness issue: the algorithm is biased toward mainstream taste and penalizes users with statistically rare but valid preferences.
 
 ---
 
