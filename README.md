@@ -138,6 +138,223 @@ TOP 5 RECOMMENDATIONS:
 
 ---
 
+## System Evaluation: Multiple User Profiles
+
+### Baseline Profile 1: High-Energy Pop Fan
+
+```
+============================================================
+User Profile: pop, happy, energy=0.85, tempo=120 BPM
+============================================================
+
+TOP 5 RECOMMENDATIONS:
+
+1. Sunrise City by Neon Echo
+   Score: 10.00/10.00
+   Reasons: mood match (+3.5), genre match (+2.5), energy perfect match (+2.5), tempo perfect match (+1.5)
+
+2. Rooftop Lights by Indigo Parade
+   Score: 7.50/10.00
+   Reasons: mood match (+3.5), genre mismatch (0), energy perfect match (+2.5), tempo perfect match (+1.5)
+
+3. Gym Hero by Max Pulse
+   Score: 6.50/10.00
+   Reasons: mood mismatch (0), genre match (+2.5), energy perfect match (+2.5), tempo perfect match (+1.5)
+
+4. Night Drive Loop by Neon Echo
+   Score: 4.00/10.00
+   Reasons: mood mismatch (0), genre mismatch (0), energy perfect match (+2.5), tempo perfect match (+1.5)
+
+5. Electric Pulse by Synth Wave Collective
+   Score: 4.00/10.00
+   Reasons: mood mismatch (0), genre mismatch (0), energy perfect match (+2.5), tempo perfect match (+1.5)
+```
+
+**Analysis:** Perfect match found (10/10). High-energy pop songs dominate. System works as expected.
+
+---
+
+### Baseline Profile 2: Chill Lofi Relaxer
+
+```
+============================================================
+User Profile: lofi, chill, energy=0.30, tempo=90 BPM
+============================================================
+
+TOP 5 RECOMMENDATIONS:
+
+1. Midnight Coding by LoRoom
+   Score: 10.00/10.00
+   Reasons: mood match (+3.5), genre match (+2.5), energy perfect match (+2.5), tempo perfect match (+1.5)
+
+2. Library Rain by Paper Lanterns
+   Score: 10.00/10.00
+   Reasons: mood match (+3.5), genre match (+2.5), energy perfect match (+2.5), tempo perfect match (+1.5)
+
+3. Spacewalk Thoughts by Orbit Bloom
+   Score: 7.00/10.00
+   Reasons: mood match (+3.5), genre mismatch (0), energy perfect match (+2.5), tempo close (+1.0)
+
+4. Focus Flow by LoRoom
+   Score: 6.50/10.00
+   Reasons: mood mismatch (0), genre match (+2.5), energy perfect match (+2.5), tempo perfect match (+1.5)
+
+5. Coffee Shop Stories by Slow Stereo
+   Score: 4.00/10.00
+   Reasons: mood mismatch (0), genre mismatch (0), energy perfect match (+2.5), tempo perfect match (+1.5)
+```
+
+**Analysis:** Two perfect matches (10/10 each). Excellent precision for a well-defined niche. Mood + genre + energy alignment creates consistency.
+
+---
+
+### Baseline Profile 3: Intense Rock Fan
+
+```
+============================================================
+User Profile: rock, intense, energy=0.90, tempo=135 BPM
+============================================================
+
+TOP 5 RECOMMENDATIONS:
+
+1. Storm Runner by Voltline
+   Score: 10.00/10.00
+   Reasons: mood match (+3.5), genre match (+2.5), energy perfect match (+2.5), tempo perfect match (+1.5)
+
+2. Gym Hero by Max Pulse
+   Score: 7.50/10.00
+   Reasons: mood match (+3.5), genre mismatch (0), energy perfect match (+2.5), tempo perfect match (+1.5)
+
+3. Sunrise City by Neon Echo
+   Score: 4.00/10.00
+   Reasons: mood mismatch (0), genre mismatch (0), energy perfect match (+2.5), tempo perfect match (+1.5)
+
+4. Rooftop Lights by Indigo Parade
+   Score: 4.00/10.00
+   Reasons: mood mismatch (0), genre mismatch (0), energy perfect match (+2.5), tempo perfect match (+1.5)
+
+5. Electric Pulse by Synth Wave Collective
+   Score: 4.00/10.00
+   Reasons: mood mismatch (0), genre mismatch (0), energy perfect match (+2.5), tempo perfect match (+1.5)
+```
+
+**Analysis:** Perfect match found. Note: System prioritizes energy/tempo when genre+mood miss, showing graceful degradation.
+
+---
+
+### Adversarial Profile 1: Conflicted High-Energy Sad (Tests Contradictory Preferences)
+
+```
+============================================================
+User Profile: metal, sad, energy=0.85, tempo=140 BPM
+============================================================
+
+TOP 5 RECOMMENDATIONS:
+
+1. Thunder Strike by Metal Gods
+   Score: 6.50/10.00
+   Reasons: mood mismatch (0), genre match (+2.5), energy perfect match (+2.5), tempo perfect match (+1.5)
+
+2. Broken Echoes by Cipher Mind
+   Score: 5.00/10.00
+   Reasons: mood match (+3.5), genre mismatch (0), energy close (+1.5), tempo mismatch (0)
+
+3. Storm Runner by Voltline
+   Score: 4.00/10.00
+   Reasons: mood mismatch (0), genre mismatch (0), energy perfect match (+2.5), tempo perfect match (+1.5)
+
+4. Gym Hero by Max Pulse
+   Score: 4.00/10.00
+   Reasons: mood mismatch (0), genre mismatch (0), energy perfect match (+2.5), tempo perfect match (+1.5)
+
+5. Rooftop Lights by Indigo Parade
+   Score: 4.00/10.00
+   Reasons: mood mismatch (0), genre mismatch (0), energy perfect match (+2.5), tempo perfect match (+1.5)
+```
+
+**Analysis:** No perfect match found (expected). System splits between genre match + sad mood, showing tension between equally-weighted features. Genre wins (6.5 vs 5.0).
+
+---
+
+### Adversarial Profile 2: Laser-Focused Lofi Relaxer (Tests Niche with Uncommon Mood)
+
+```
+============================================================
+User Profile: lofi, relaxed, energy=0.20, tempo=85 BPM
+============================================================
+
+TOP 5 RECOMMENDATIONS:
+
+1. Library Rain by Paper Lanterns
+   Score: 6.50/10.00
+   Reasons: mood mismatch (0), genre match (+2.5), energy perfect match (+2.5), tempo perfect match (+1.5)
+
+2. Coffee Shop Stories by Slow Stereo
+   Score: 6.50/10.00
+   Reasons: mood match (+3.5), genre mismatch (0), energy close (+1.5), tempo perfect match (+1.5)
+
+3. Midnight Coding by LoRoom
+   Score: 5.50/10.00
+   Reasons: mood mismatch (0), genre match (+2.5), energy close (+1.5), tempo perfect match (+1.5)
+
+4. Focus Flow by LoRoom
+   Score: 5.50/10.00
+   Reasons: mood mismatch (0), genre match (+2.5), energy close (+1.5), tempo perfect match (+1.5)
+
+5. Island Breeze by Reggae Vibes
+   Score: 5.00/10.00
+   Reasons: mood match (+3.5), genre mismatch (0), energy mismatch (0), tempo perfect match (+1.5)
+```
+
+**Analysis:** No perfect match for "relaxed" mood + lofi (dataset has "chill" but not "relaxed"). System gracefully falls back to genre/energy matches (6.5/10). Shows dataset limitation but doesn't crash.
+
+---
+
+### Adversarial Profile 3: Slow Paradox (Tests Edge Values - Energy 0.0, Extreme Tempo 180)
+
+```
+============================================================
+User Profile: ambient, chill, energy=0.00, tempo=180 BPM
+============================================================
+
+TOP 5 RECOMMENDATIONS:
+
+1. Spacewalk Thoughts by Orbit Bloom
+   Score: 7.50/10.00
+   Reasons: mood match (+3.5), genre match (+2.5), energy close (+1.5), tempo mismatch (0)
+
+2. Midnight Coding by LoRoom
+   Score: 3.50/10.00
+   Reasons: mood match (+3.5), genre mismatch (0), energy mismatch (0), tempo mismatch (0)
+
+3. Library Rain by Paper Lanterns
+   Score: 3.50/10.00
+   Reasons: mood match (+3.5), genre mismatch (0), energy mismatch (0), tempo mismatch (0)
+
+4. Thunder Strike by Metal Gods
+   Score: 1.50/10.00
+   Reasons: mood mismatch (0), genre mismatch (0), energy mismatch (0), tempo perfect match (+1.5)
+
+5. Storm Runner by Voltline
+   Score: 1.00/10.00
+   Reasons: mood mismatch (0), genre mismatch (0), energy mismatch (0), tempo close (+1.0)
+```
+
+**Analysis:** Interesting edge case: user wants 0.0 energy (silent?) and 180 BPM (very fast). No song matches both. System prioritizes mood match (chill) over the paradoxical tempo demand. Top result (7.5) sensibly ignores the extreme tempo in favor of mood/genre/energy alignment. Shows the system makes reasonable tradeoffs.
+
+---
+
+## Key Findings from System Evaluation
+
+1. **Perfect matches (10/10) only occur when all four features align** — very rare in real-world scenarios
+2. **Mood has strong influence** — songs with matching mood rank higher even when genre/tempo miss
+3. **Graceful degradation works** — system never crashes and always returns recommendations, even for contradictory inputs
+4. **Edge cases handled well** — extreme energy (0.0) and tempo (180 BPM) values don't break the algorithm
+5. **Dataset limitations exposed** — some mood-genre combinations ("relaxed" + "lofi") don't exist in the 18-song catalog
+6. **Weighting priorities clear** — when features conflict, the 10-point system reveals what matters most (mood 3.5 > genre 2.5 > others)
+
+---
+
 ## Experiments You Tried
 
 Use this section to document the experiments you ran. For example:
