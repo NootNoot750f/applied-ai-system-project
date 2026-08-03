@@ -1,0 +1,21 @@
+graph TD
+    A["User Profile<br/>(genre, mood, energy, tempo)"] -->|Input| B["AdaptiveRecommender"]
+    B -->|PLAN| C["Load Initial Weights<br/>(mood=3.5, genre=2.5, ...)"]
+    C -->|ACT| D["Score All Songs<br/>(score_song_with_config)"]
+    D -->|Generate| E["Top K Recommendations<br/>(ranked by score)"]
+    E -->|Output| F["User Reviews Recommendations"]
+    F -->|CHECK| G["User Provides Feedback<br/>(liked_song_ids, skipped_song_ids)"]
+    G -->|Input| H["Analyze Feedback<br/>(which features mattered?)"]
+    H -->|ADAPT| I["Adjust Weights<br/>(+0.2 for good features,<br/>-0.1 for bad features)"]
+    I -->|Guardrails| J["Clamp Weights<br/>(0.1 to 5.0)"]
+    J -->|Updated Config| K["Log Weight Changes<br/>(track history)"]
+    K -->|Loop| C
+
+    style A fill:#e1f5ff
+    style B fill:#fff3e0
+    style E fill:#f3e5f5
+    style F fill:#e8f5e9
+    style G fill:#e8f5e9
+    style I fill:#fce4ec
+    style J fill:#f1f8e9
+    style K fill:#ede7f6

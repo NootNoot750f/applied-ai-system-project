@@ -1,0 +1,120 @@
+﻿
+======================================================================
+ADAPTIVE MUSIC RECOMMENDER DEMO
+Demonstrates agentic workflow: Plan -> Act -> Check -> Adapt
+======================================================================
+
+Loaded 18 songs from database.
+
+User Profile: pop, happy, energy=0.8, tempo=120 BPM
+
+[ITERATION 1] PLAN >> Generate initial recommendations
+
+======================================================================
+INITIAL RECOMMENDATIONS (Iteration 1)
+======================================================================
+
+1. Sunrise City by Neon Echo
+   Score: 10.00/10.00
+   mood match (+3.5), genre match (+2.5), energy perfect match (+2.5), tempo perfect match (+1.5)
+
+2. Rooftop Lights by Indigo Parade
+   Score: 7.50/10.00
+   mood match (+3.5), genre mismatch (0), energy perfect match (+2.5), tempo perfect match (+1.5)
+
+3. Gym Hero by Max Pulse
+   Score: 6.50/10.00
+   mood mismatch (0), genre match (+2.5), energy perfect match (+2.5), tempo perfect match (+1.5)
+
+4. Night Drive Loop by Neon Echo
+   Score: 4.00/10.00
+   mood mismatch (0), genre mismatch (0), energy perfect match (+2.5), tempo perfect match (+1.5)
+
+5. Electric Pulse by Synth Wave Collective
+   Score: 4.00/10.00
+   mood mismatch (0), genre mismatch (0), energy perfect match (+2.5), tempo perfect match (+1.5)
+
+[ITERATION 1] CHECK >> User provides feedback
+[LIKED] User enjoyed songs: ['Sunrise City', 'Rooftop Lights']
+[SKIPPED] User passed on: Electric Pulse
+
+[ITERATION 1] ADAPT >> System adjusts weights based on feedback
+
+[ITERATION 2] PLAN >> Generate improved recommendations with new weights
+
+======================================================================
+RECOMMENDATIONS (After Learning Round 1) (Iteration 2)
+======================================================================
+
+1. Sunrise City by Neon Echo
+   Score: 11.20/10.00
+   mood match (+3.9), genre match (+2.7), energy perfect match (+2.8), tempo perfect match (+1.8)
+
+2. Rooftop Lights by Indigo Parade
+   Score: 8.50/10.00
+   mood match (+3.9), genre mismatch (0), energy perfect match (+2.8), tempo perfect match (+1.8)
+
+3. Gym Hero by Max Pulse
+   Score: 7.30/10.00
+   mood mismatch (0), genre match (+2.7), energy perfect match (+2.8), tempo perfect match (+1.8)
+
+4. Night Drive Loop by Neon Echo
+   Score: 4.60/10.00
+   mood mismatch (0), genre mismatch (0), energy perfect match (+2.8), tempo perfect match (+1.8)
+
+5. Electric Pulse by Synth Wave Collective
+   Score: 4.60/10.00
+   mood mismatch (0), genre mismatch (0), energy perfect match (+2.8), tempo perfect match (+1.8)
+
+[ITERATION 2] CHECK >> User provides more feedback
+[LIKED] User enjoyed: Sunrise City
+[SKIPPED] User passed on: Night Drive Loop, Electric Pulse
+
+[ITERATION 2] ADAPT >> System adjusts weights again
+
+[ITERATION 3] PLAN >> Generate final recommendations with refined weights
+
+======================================================================
+RECOMMENDATIONS (After Learning Round 2) (Iteration 3)
+======================================================================
+
+1. Sunrise City by Neon Echo
+   Score: 11.60/10.00
+   mood match (+4.1), genre match (+2.9000000000000004), energy perfect match (+2.8), tempo perfect match (+1.8)
+
+2. Rooftop Lights by Indigo Parade
+   Score: 8.70/10.00
+   mood match (+4.1), genre mismatch (0), energy perfect match (+2.8), tempo perfect match (+1.8)
+
+3. Gym Hero by Max Pulse
+   Score: 7.50/10.00
+   mood mismatch (0), genre match (+2.9000000000000004), energy perfect match (+2.8), tempo perfect match (+1.8)
+
+4. Night Drive Loop by Neon Echo
+   Score: 4.60/10.00
+   mood mismatch (0), genre mismatch (0), energy perfect match (+2.8), tempo perfect match (+1.8)
+
+5. Electric Pulse by Synth Wave Collective
+   Score: 4.60/10.00
+   mood mismatch (0), genre mismatch (0), energy perfect match (+2.8), tempo perfect match (+1.8)
+
+
+======================================================================
+LEARNING SUMMARY
+======================================================================
+
+Weight Evolution:
+  Round 0: mood=3.50, genre=2.50, energy=2.50, tempo=1.50
+  Round 1: mood=3.90, genre=2.70, energy=2.80, tempo=1.80
+  Round 2: mood=4.10, genre=2.90, energy=2.80, tempo=1.80
+
+Feedback History:
+  Round 1: 2 liked, 1 skipped
+    >> Weights adjusted: {'mood': 3.5, 'genre': 2.5, 'energy': 2.5, 'tempo': 1.5} >> {'mood': 3.9, 'genre': 2.7, 'energy': 2.8, 'tempo': 1.8}
+  Round 2: 1 liked, 2 skipped
+    >> Weights adjusted: {'mood': 3.9, 'genre': 2.7, 'energy': 2.8, 'tempo': 1.8} >> {'mood': 4.1, 'genre': 2.9000000000000004, 'energy': 2.8, 'tempo': 1.8}
+
+======================================================================
+DEMO COMPLETE: System successfully learned and improved recommendations!
+======================================================================
+

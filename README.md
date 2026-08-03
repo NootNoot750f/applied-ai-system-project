@@ -1,17 +1,193 @@
-# 🎵 Music Recommender Simulation
+# 🎵 Adaptive Music Recommender: An Applied AI System
 
-## Project Summary
+## Original Project Summary
 
-In this project you will build and explain a small music recommender system.
+**Base Project**: Music Recommender Simulation (from Module 2)
 
-Your goal is to:
+The original recommender system scores songs against a user's taste profile using a weighted algorithm across four features: genre match (2.5 pts), mood match (3.5 pts), energy closeness (2.5 pts), and tempo closeness (1.5 pts). Songs are ranked by score and the top matches are returned as recommendations.
 
-- Represent songs and a user "taste profile" as data
-- Design a scoring rule that turns that data into recommendations
-- Evaluate what your system gets right and wrong
-- Reflect on how this mirrors real world AI recommenders
+## What's New: Agentic Workflow
 
-The recommender works by scoring each song against the user's taste profile. For every song, we check four features: does the genre match (40%), does the mood match (35%), is the energy level similar to what they like (20%), and is the tempo close (5%)? Each comparison gets a score from 0-1, and we add them up weighted to get a final score. Then we sort songs by score (highest first) and recommend the best matches, while adding some variety to keep recommendations interesting.
+This extended system adds **agentic learning** — the recommender now observes user feedback (liked/skipped songs) and adapts its weights automatically. Instead of static weights, the system:
+
+1. **PLAN**: Initialize with default weights
+2. **ACT**: Generate recommendations using current weights
+3. **CHECK**: Receive feedback on which songs users liked/skipped
+4. **ADAPT**: Analyze feedback and adjust weights upward for features that matched liked songs, downward for skipped songs
+5. **REPEAT**: Use improved weights in the next recommendation cycle
+
+This demonstrates how AI systems can learn from behavior rather than relying on hand-tuned parameters. The system includes guardrails (weight clamping), comprehensive logging, and tracks all weight evolution.
+
+## System Architecture
+
+![Architecture Diagram](diagrams/architecture.mmd)
+
+See `diagrams/architecture.mmd` for the detailed data flow showing the Plan-Act-Check-Adapt cycle.
+
+---
+
+## Setup and Installation
+
+### Prerequisites
+- Python 3.8+
+- pip
+
+### Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/applied-ai-system-final.git
+cd applied-ai-system-final
+```
+
+2. Create a virtual environment (optional but recommended):
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+3. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+### Running the Adaptive Recommender Demo
+
+To see the agentic system in action:
+
+```bash
+cd src
+python adaptive_demo.py
+```
+
+This runs a complete 3-iteration demo where:
+- Iteration 1: System makes initial recommendations, user gives feedback
+- Iteration 2: System adjusts weights and re-recommends, user gives more feedback  
+- Iteration 3: System refines weights again and generates final recommendations
+
+### Running Tests
+
+```bash
+pytest tests/
+pytest test_profiles.py
+```
+
+---
+
+## Sample Interaction: System Learning Over Time
+
+Here's what happens when you run `python adaptive_demo.py`:
+
+**Iteration 1: Initial Recommendations**
+```
+User Profile: pop, happy, energy=0.8, tempo=120 BPM
+
+Initial Weights: mood=3.5, genre=2.5, energy=2.5, tempo=1.5
+
+1. Sunrise City by Neon Echo
+   Score: 10.00/10.00
+   mood match (+3.5), genre match (+2.5), energy perfect match (+2.5), tempo perfect match (+1.5)
+
+2. Rooftop Lights by Indigo Parade
+   Score: 7.50/10.00
+   mood match (+3.5), genre mismatch (0), energy perfect match (+2.5), tempo perfect match (+1.5)
+
+User Feedback: Liked top 2 songs, skipped the last one (Electric Pulse)
+```
+
+**After Learning Round 1: Weights Adapt**
+```
+Weight Changes:
+  mood: 3.5 -> 3.9 (boosted because liked songs had mood match)
+  genre: 2.5 -> 2.7 (boosted)
+  energy: 2.5 -> 2.8 (boosted)
+  tempo: 1.5 -> 1.8 (boosted)
+```
+
+**Iteration 2: Improved Recommendations**
+```
+Updated Weights: mood=3.9, genre=2.7, energy=2.8, tempo=1.8
+
+1. Sunrise City by Neon Echo
+   Score: 11.20/10.00  [IMPROVED - score went up]
+   mood match (+3.9), genre match (+2.7), energy perfect match (+2.8), tempo perfect match (+1.8)
+
+2. Rooftop Lights by Indigo Parade
+   Score: 8.50/10.00  [IMPROVED - score went up]
+   mood match (+3.9), genre mismatch (0), energy perfect match (+2.8), tempo perfect match (+1.8)
+
+User Feedback: Liked Sunrise City again, skipped Night Drive Loop and Electric Pulse
+```
+
+**After Learning Round 2: Further Refinement**
+```
+Weight Changes:
+  mood: 3.9 -> 4.1 (further boosted - mood was critical for liked songs)
+  genre: 2.7 -> 2.9 (continued boost)
+  energy: 2.8 -> 2.8 (stable)
+  tempo: 1.8 -> 1.8 (stable)
+```
+
+**Iteration 3: Final Recommendations**
+```
+Updated Weights: mood=4.1, genre=2.9, energy=2.8, tempo=1.8
+
+1. Sunrise City by Neon Echo
+   Score: 11.60/10.00  [FURTHER IMPROVED]
+   mood match (+4.1), genre match (+2.9), energy perfect match (+2.8), tempo perfect match (+1.8)
+
+2. Rooftop Lights by Indigo Parade
+   Score: 8.70/10.00  [FURTHER IMPROVED]
+   mood match (+4.1), genre mismatch (0), energy perfect match (+2.8), tempo perfect match (+1.8)
+```
+
+**Key Observation**: Over 2 learning rounds, the system increased the score of songs the user liked (Sunrise City went from 10.00 -> 11.20 -> 11.60) by boosting the weights of features those songs had.
+
+---
+
+## Design Decisions
+
+### 1. Weight Adjustment Strategy
+- **Positive feedback**: +0.2 per liked song with matching feature
+- **Negative feedback**: -0.1 per skipped song with matching feature
+- **Rationale**: Users' actions reveal what matters. Liked songs with mood matches tell us mood is valuable; skipped songs with genre matches tell us genre alone isn't enough.
+
+### 2. Guardrails: Weight Clamping
+- Weights are clamped to [0.1, 5.0] to prevent drift
+- Prevents mood from becoming negligible (< 0.1) or overwhelming (> 5.0)
+- **Rationale**: Without bounds, repeated feedback could push weights toward extremes, making the system brittle.
+
+### 3. Logging and Tracking
+- Every recommendation and weight adjustment is logged with timestamp
+- Weight history is preserved for analysis
+- Feedback history is recorded with before/after weights
+- **Rationale**: Transparency is critical for trustworthy AI. Users and developers need to see why recommendations changed.
+
+### 4. Incremental Learning
+- System learns from each interaction rather than batching feedback
+- Allows near-real-time adaptation
+- **Rationale**: Realistic recommenders respond quickly to user preferences, not once per week.
+
+---
+
+## Testing and Reliability
+
+### What Works
+- ✓ System correctly identifies which features mattered for liked songs
+- ✓ Weight adjustments always move in the correct direction (increase for good features, decrease for bad)
+- ✓ Guardrails prevent weights from drifting out of bounds
+- ✓ Recommendations improve over iterations (top-liked song scores increase)
+- ✓ Logging captures all decisions for audit trail
+
+### Edge Cases Handled
+- Empty feedback (no likes/skips) -> no adjustment made
+- Single feedback round -> proportional weight changes
+- Contradictory feedback (same song in likes and skips) -> balanced by penalty system
+
+### Known Limitations
+- Linear adjustment model: assumes more feedback = proportionally better learning
+- No forgetting: old feedback weights equally with recent feedback
+- Small dataset: 18 songs may not show all learning patterns
 
 ---
 

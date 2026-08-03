@@ -1,5 +1,31 @@
 from typing import List, Dict, Tuple, Optional
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+@dataclass
+class RecommenderConfig:
+    """Adjustable weights for the recommendation algorithm."""
+    mood_weight: float = 3.5
+    genre_weight: float = 2.5
+    energy_weight: float = 2.5
+    tempo_weight: float = 1.5
+
+    def clamp(self) -> None:
+        """Prevent weights from drifting outside reasonable bounds (0.1 to 5.0)."""
+        self.mood_weight = max(0.1, min(5.0, self.mood_weight))
+        self.genre_weight = max(0.1, min(5.0, self.genre_weight))
+        self.energy_weight = max(0.1, min(5.0, self.energy_weight))
+        self.tempo_weight = max(0.1, min(5.0, self.tempo_weight))
+
+    def total_weight(self) -> float:
+        """Get the sum of all weights."""
+        return self.mood_weight + self.genre_weight + self.energy_weight + self.tempo_weight
 
 @dataclass
 class Song:
@@ -197,6 +223,59 @@ def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, List[str]]:
 
     return (score, reasons)
 
+def score_song_with_config(user_prefs: Dict, song: Dict, config: RecommenderConfig) -> Tuple[float, List[str]]:
+    """
+    Scores a song with adjustable weights (used by AdaptiveRecommender).
+
+    Args:
+        user_prefs: Dict with keys 'mood', 'genre', 'energy', 'tempo_bpm'
+        song: Dict with song attributes
+        config: RecommenderConfig with adjustable weights
+
+    Returns:
+        Tuple of (score, reasons)
+    """
+    score = 0.0
+    reasons = []
+
+    # Mood Match
+    if song['mood'] == user_prefs['mood']:
+        score += config.mood_weight
+        reasons.append(f"mood match (+{config.mood_weight})")
+    else:
+        reasons.append("mood mismatch (0)")
+
+    # Genre Match
+    if song['genre'] == user_prefs['genre']:
+        score += config.genre_weight
+        reasons.append(f"genre match (+{config.genre_weight})")
+    else:
+        reasons.append("genre mismatch (0)")
+
+    # Energy Closeness
+    energy_distance = abs(song['energy'] - user_prefs['energy'])
+    if energy_distance <= 0.15:
+        score += config.energy_weight
+        reasons.append(f"energy perfect match (+{config.energy_weight})")
+    elif energy_distance <= 0.30:
+        score += config.energy_weight * 0.6
+        reasons.append(f"energy close (+{config.energy_weight * 0.6:.1f})")
+    else:
+        reasons.append("energy mismatch (0)")
+
+    # Tempo Closeness
+    tempo_distance = abs(song['tempo_bpm'] - user_prefs['tempo_bpm'])
+    if tempo_distance <= 20:
+        score += config.tempo_weight
+        reasons.append(f"tempo perfect match (+{config.tempo_weight})")
+    elif tempo_distance <= 40:
+        score += config.tempo_weight * 0.67
+        reasons.append(f"tempo close (+{config.tempo_weight * 0.67:.1f})")
+    else:
+        reasons.append("tempo mismatch (0)")
+
+    return (score, reasons)
+
 def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int = 5) -> List[Tuple[Dict, float, str]]:
     """
     Recommends the top k songs for a user based on preference matching.
@@ -224,6 +303,118 @@ def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int = 5) -> List[Tup
 
     # Sort by score (highest first) using sorted() and return top k
     return sorted(scored_songs, key=lambda x: x[1], reverse=True)[:k]
+
+class AdaptiveRecommender:
+    """
+    Agentic recommender that learns from user feedback and adapts weights.
+
+    Workflow:
+    1. PLAN: Start with default weights
+    2. ACT: Generate recommendations using current weights
+    3. CHECK: User provides feedback (likes/skips)
+    4. ADAPT: Analyze feedback and adjust weights
+    5. REPEAT: Next round uses improved weights
+    """
+    def __init__(self, songs: List[Dict], initial_config: Optional[RecommenderConfig] = None):
+        self.songs = songs
+        self.config = initial_config or RecommenderConfig()
+        self.feedback_history = []
+        self.weight_history = [self._config_snapshot()]
+        logger.info(f"AdaptiveRecommender initialized with weights: {self.weight_history[0]}")
+
+    def _config_snapshot(self) -> Dict[str, float]:
+        """Return current config as dict."""
+        return {
+            'mood': self.config.mood_weight,
+            'genre': self.config.genre_weight,
+            'energy': self.config.energy_weight,
+            'tempo': self.config.tempo_weight
+        }
+
+    def recommend(self, user_prefs: Dict, k: int = 5) -> List[Tuple[Dict, float, str]]:
+        """Generate recommendations using current weights."""
+        scored_songs = []
+        for song in self.songs:
+            score, reasons = score_song_with_config(user_prefs, song, self.config)
+            explanation = ", ".join(reasons)
+            scored_songs.append((song, score, explanation))
+
+        recommendations = sorted(scored_songs, key=lambda x: x[1], reverse=True)[:k]
+        logger.info(f"Generated {len(recommendations)} recommendations for user (genre={user_prefs['genre']}, mood={user_prefs['mood']})")
+        return recommendations
+
+    def learn_from_feedback(self, user_prefs: Dict, liked_song_ids: List[int], skipped_song_ids: List[int]) -> None:
+        """
+        Learn from user feedback and adjust weights.
+
+        Strategy:
+        - For liked songs: increase weight of features they had
+        - For skipped songs: decrease weight of features they had
+        - Clamp weights to reasonable bounds
+        """
+        logger.info(f"Processing feedback: {len(liked_song_ids)} liked, {len(skipped_song_ids)} skipped")
+
+        if not liked_song_ids and not skipped_song_ids:
+            logger.info("No feedback to process")
+            return
+
+        # Find songs by ID
+        liked_songs = [s for s in self.songs if s['id'] in liked_song_ids]
+        skipped_songs = [s for s in self.songs if s['id'] in skipped_song_ids]
+
+        # Adjust weights based on liked songs
+        mood_boost = 0.0
+        genre_boost = 0.0
+        energy_boost = 0.0
+        tempo_boost = 0.0
+
+        for song in liked_songs:
+            if song['mood'] == user_prefs['mood']:
+                mood_boost += 0.2
+            if song['genre'] == user_prefs['genre']:
+                genre_boost += 0.2
+            energy_distance = abs(song['energy'] - user_prefs['energy'])
+            if energy_distance <= 0.30:
+                energy_boost += 0.2
+            tempo_distance = abs(song['tempo_bpm'] - user_prefs['tempo_bpm'])
+            if tempo_distance <= 40:
+                tempo_boost += 0.2
+
+        # Penalize based on skipped songs
+        for song in skipped_songs:
+            if song['mood'] == user_prefs['mood']:
+                mood_boost -= 0.1
+            if song['genre'] == user_prefs['genre']:
+                genre_boost -= 0.1
+            energy_distance = abs(song['energy'] - user_prefs['energy'])
+            if energy_distance <= 0.30:
+                energy_boost -= 0.1
+            tempo_distance = abs(song['tempo_bpm'] - user_prefs['tempo_bpm'])
+            if tempo_distance <= 40:
+                tempo_boost -= 0.1
+
+        # Apply adjustments
+        old_config = self._config_snapshot()
+        self.config.mood_weight += mood_boost
+        self.config.genre_weight += genre_boost
+        self.config.energy_weight += energy_boost
+        self.config.tempo_weight += tempo_boost
+        self.config.clamp()
+
+        new_config = self._config_snapshot()
+        self.weight_history.append(new_config)
+
+        logger.info(f"Weight adjustment: mood {old_config['mood']:.2f}→{new_config['mood']:.2f}, "
+                   f"genre {old_config['genre']:.2f}→{new_config['genre']:.2f}, "
+                   f"energy {old_config['energy']:.2f}→{new_config['energy']:.2f}, "
+                   f"tempo {old_config['tempo']:.2f}→{new_config['tempo']:.2f}")
+
+        self.feedback_history.append({
+            'liked': len(liked_song_ids),
+            'skipped': len(skipped_song_ids),
+            'weights_before': old_config,
+            'weights_after': new_config
+        })
 
 # Example user profiles for testing
 def create_example_users() -> Dict[str, UserProfile]:

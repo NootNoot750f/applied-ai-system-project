@@ -95,9 +95,75 @@ Prompts:
 
 ## Expand the dataset to at least 100 songs to represent rare genre-mood combinations and reduce fallback matching behavior. Add features like lyrics, artist similarity, explicit content warnings, and instrumentation (vocal vs. instrumental), which would let users specify preferences beyond the current four dimensions. Improve explanations by showing not just why a song matched, but also which songs almost matched and why they fell short, helping users understand the tradeoffs the algorithm made.
 
-## 9. Personal Reflection
+## 9. Agentic Extension: Learning from Feedback
 
-A few sentences about your experience.
+### What Changed
+The original static recommender has been extended with an `AdaptiveRecommender` class that learns from user feedback (liked/skipped songs) and adjusts its weights dynamically. Instead of fixed weights (mood=3.5, genre=2.5, energy=2.5, tempo=1.5), the system now:
+
+1. **Observes** which songs users liked vs. skipped
+2. **Analyzes** what features those songs had (did liked songs have mood matches? genre matches?)
+3. **Adjusts** weights proportionally: +0.2 per liked song with that feature, -0.1 per skipped song
+4. **Clamps** weights to [0.1, 5.0] to prevent drift
+5. **Repeats** with improved weights
+
+### How It Works in Practice
+After just 2 rounds of feedback:
+- Mood weight increased from 3.5 -> 4.1 (because liked songs had mood matches)
+- Genre weight increased from 2.5 -> 2.9 (genre also mattered)
+- Energy and tempo stabilized (less variation in user skips based on these)
+
+The scores of songs the user consistently liked improved: "Sunrise City" went from 10.00 -> 11.20 -> 11.60 as weights refined.
+
+### Logging and Guardrails
+- Every recommendation is logged with timestamp and user context
+- Every weight adjustment is logged with before/after values
+- Weight clamping prevents any single feature from dominating
+- Feedback history is preserved for audit trail and analysis
+
+---
+
+## 10. AI Collaboration and Development Process
+
+### How I Used AI (Claude)
+1. **Helpful Suggestion**: When I was building the weight adjustment logic, Claude suggested using a differential approach (+0.2 for liked features, -0.1 for skipped features) rather than a threshold-based approach (all-or-nothing). This balanced positive and negative feedback in a natural way and prevented oscillation when feedback was mixed.
+
+2. **Flawed Suggestion**: Claude initially suggested I use a Bayesian prior update formula with exponential decay, claiming it would be "more sophisticated" and would prevent overfitting. In practice, this was over-engineered for the problem—it added complexity without improving results, and made the weight evolution harder to trace for debugging. I reverted to the simpler linear adjustment, which works better.
+
+### What Worked Well in This Project
+- Modular class design: Separating `AdaptiveRecommender` from the base `Recommender` class made testing easier
+- Comprehensive logging: Every decision is recorded, making the system auditable
+- Clear feedback representation: Using simple lists of song IDs for liked/skipped makes the interface easy to understand and test
+
+### What Would Improve It
+- Temporal weighting: Recent feedback should matter more than old feedback (I don't track when feedback was given)
+- Confidence scoring: The system should report how confident it is in its weights (is this based on 2 user ratings or 200?)
+- Adaptive learning rate: Instead of fixed +0.2/-0.1, the adjustment could scale based on dataset size or feedback count
+
+---
+
+## 11. System Limitations (Agentic Approach)
+
+### Data Sparsity
+With only 18 songs, the system learns from a very limited sample. A user who likes 2 songs teaches the system about those 2 songs only. With 100+ songs, patterns would emerge more robustly.
+
+### Feature Blindness
+The system can only learn about the 4 features it scores on (mood, genre, energy, tempo). If a user skips "Sunrise City" because they don't like the artist Neon Echo, the system has no way to learn that—it will keep recommending other Neon Echo songs.
+
+### No Catastrophic Forgetting
+The system never forgets. If a user hated pop music in Round 1 but loves it in Round 5, the weights don't adjust because they're stuck reflecting the early negative feedback. A decay factor would help.
+
+### Assumes Linear Relationships
+The system assumes "more mood weight = better recommendations," but this may not be true. Some users might actually prefer a balance of features over pure mood matching.
+
+---
+
+## 12. Personal Reflection
+
+Building this agentic extension taught me that the biggest challenge in AI isn't the algorithm—it's understanding what the algorithm should learn from. The original recommender was a static set of hand-tuned weights (3.5, 2.5, 2.5, 1.5), and I had to ask: how do these numbers reflect what users actually want? By observing behavior (which songs were liked/skipped), I could answer that question empirically. The system learned that mood matters more than I originally thought, by pure observation.
+
+The trickiest part was deciding when NOT to make the system smarter. Claude suggested Bayesian priors, regularization, exponential decay—all theoretically sound, but they would have hidden what the system was learning. The simple linear adjustment is transparent: you can read the logs and understand exactly why mood went from 3.5 to 3.9.
+
+I was surprised by how quickly the system stabilized. After just 2 feedback rounds, the weights weren't changing much—suggesting that the initial intuition about mood/genre being most important was correct, and user feedback was confirming that rather than contradicting it. This makes me think about real recommenders: maybe they also converge quickly on key weightings, and the bulk of machine learning is about finding new features to consider, not fine-tuning existing weights.
 
 Prompts:
 
