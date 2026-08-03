@@ -51,10 +51,16 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### Running the Adaptive Recommender Demo
+### Running the Adaptive Recommender
 
-To see the agentic system in action:
+**Option 1: Interactive Mode** (try it yourself)
+```bash
+cd src
+python interactive.py
+```
+Enter your music preferences (genre, mood, energy, tempo), get personalized recommendations, tell the system which songs you like/skip, and watch it learn and re-rank songs in real-time.
 
+**Option 2: Demo Mode** (see pre-scripted example)
 ```bash
 cd src
 python adaptive_demo.py
